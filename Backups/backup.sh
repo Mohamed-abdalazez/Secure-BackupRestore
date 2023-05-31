@@ -6,9 +6,28 @@
 TargetDir=$1
 TargetBackup=$2
 
-echo $#
+# echo $#
 
+<<validation
+validate if the two directories :  
+1) directory to be backed up.
+2) directory which should store eventually the backup.
+are correct or not
+validation
 
+if [[ -d ${TargetDir} ]]; then
+  echo "done"
+else
+  echo "$TargetDir is not valid please try again!"
+  exit 0
+fi
+
+if [[ -d ${TargetBackup} ]]; then
+  echo "done"
+else
+  echo "$TargetBackup is not valid please try again!"
+  exit 0
+fi
 
 if [ $# -eq 2 ]; then
   echo "ok"
@@ -26,16 +45,17 @@ fi
 
 cp -r ${TargetDir} ${TargetBackup}
 
-data=${TargetBackup}/Data
+data=${TargetBackup}/$(basename $TargetDir)
 
 echo ${data}
 files=$(ls ${data})
 # echo ${files}
 for i in $files; do
   echo ${i}
-  tar -czvf ${i}.tar.gz ./Data/${i} --remove-files
-  cp -r ${i}.tar.gz ./Data
+
+  tar -czvf ${i}.tar.gz ./$(basename $TargetDir)/${i} --remove-files
+  cp -r ${i}.tar.gz ./$(basename $TargetDir)
   rm ${i}.tar.gz
 done
 
-tar -czvf ${data}.tar.gz ./Data --remove-files
+tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
