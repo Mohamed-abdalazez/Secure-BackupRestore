@@ -34,3 +34,29 @@ validate_backup_params() {
     exit 0
   fi
 }
+
+<<backup
+validate if the two directories :  
+1) directory to be backed up.
+2) directory which should store eventually the backup.
+are correct or not
+backup
+
+backup() {
+  cp -r ${TargetDir} ${TargetBackup}
+
+  data=${TargetBackup}/$(basename $TargetDir)
+
+  echo ${data}
+  files=$(ls ${data})
+  # echo ${files}
+  for i in $files; do
+    echo ${i}
+
+    tar -czvf ${i}.tar.gz ./$(basename $TargetDir)/${i} --remove-files
+    cp -r ${i}.tar.gz ./$(basename $TargetDir)
+    rm ${i}.tar.gz
+  done
+
+  tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
+}
