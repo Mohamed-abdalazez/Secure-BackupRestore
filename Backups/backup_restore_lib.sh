@@ -92,3 +92,23 @@ validate_restore_params() {
     exit 0
   fi
 }
+
+restore() {
+
+  # echo ${TargetBackup} # /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Backups/Data
+  # echo ${TargetDir}
+  # echo ${EncryptionKey}
+  # echo `pwd`
+
+  files=$(ls ${TargetBackup})
+  # echo ${files}
+  cd ${TargetBackup}
+  echo $(pwd)
+  for i in $files; do
+    echo ${i}
+    tar -xf ${i} -C ${TargetDir}
+  done
+  echo $(pwd)
+}
+
+# ./restore.sh /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Backups/Data /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Data_Restored mohamed
