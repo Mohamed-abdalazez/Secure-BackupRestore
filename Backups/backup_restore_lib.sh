@@ -52,11 +52,13 @@ backup() {
   files=$(ls ${data})
   # echo ${files}
   for i in $files; do
-    echo ${i}
-    tar -czvf ${i}.tar.gz ./${i}
+    # echo ${i}
+    date=$(date '+%Y_%m_%d')
+    tar -czvf ${i}_${date}.tar.gz ./${i}
     rm -rf ${i}
   done
 
   # tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
+  echo $(pwd)
 
 }
