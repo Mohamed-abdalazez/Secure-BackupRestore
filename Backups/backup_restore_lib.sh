@@ -59,7 +59,12 @@ backup() {
   done
 
   $(cd .. && mkdir ${fullDate})
-
+  
+  # echo $(pwd)
+  for i in $files; do
+    # echo ${i}
+    echo $(date) -r ${i}
+  done
   # tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
   # cd ..
   # scp -i EC2Naruto.pem -r Data ubuntu@ec2-54-165-173-161.compute-1.amazonaws.com:backup
