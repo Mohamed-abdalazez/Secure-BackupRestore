@@ -5,6 +5,7 @@
 
 TargetDir=$1
 TargetBackup=$2
+EncryptionKey=$3
 
 # echo $#
 
@@ -13,6 +14,6 @@ TargetBackup=$2
 
 source ./backup_restore_lib.sh
 
-validate_backup_params ${TargetDir} ${TargetBackup}
+validate_backup_params ${TargetDir} ${TargetBackup} ${EncryptionKey}
 
 backup ${TargetDir} ${TargetBackup}

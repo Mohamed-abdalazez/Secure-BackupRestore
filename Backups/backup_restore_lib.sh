@@ -23,7 +23,7 @@ validate_backup_params() {
     exit 0
   fi
 
-  if [ $# -eq 2 ]; then
+  if [ $# -eq 3 ]; then
     echo "ok"
   else
     echo "To be able to use the script, you should do the following:"
