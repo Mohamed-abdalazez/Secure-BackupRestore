@@ -23,7 +23,7 @@ validate_backup_params() {
     exit 0
   fi
 
-  if [ $# -eq 3 ]; then
+  if [ $# -eq 4 ]; then
     echo "ok"
   else
     echo "To be able to use the script, you should do the following:"
@@ -33,14 +33,12 @@ validate_backup_params() {
     echo "4) number of days (n) that the script should use to backup only the changed files during the last n days."
     exit 0
   fi
+  re='^[0-9]+$'
+  if ! [[ $days =~ $re ]]; then
+    echo "${days}: not a number try again with a correct data!"
+    exit 0
+  fi
 }
-
-<<backup
-validate if the two directories :  
-1) directory to be backed up.
-2) directory which should store eventually the backup.
-are correct or not
-backup
 
 backup() {
   cp -r ${TargetDir} ${TargetBackup}
@@ -53,8 +51,10 @@ backup() {
   # echo ${files}
   for i in $files; do
     # echo ${i}
-    date=$(date '+%Y_%m_%d')
-    tar -czvf ${i}_${date}.tar.gz ./${i}
+    fullDate=$(echo $(date) | sed 'y/ /_/')
+    fullDate=$(echo ${fullDate} | sed 'y/:/_/')
+    echo ${fullDate}
+    tar -czvf ${i}.tar.gz ./${i}
     rm -rf ${i}
   done
 
