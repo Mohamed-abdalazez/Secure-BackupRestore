@@ -10,21 +10,21 @@ validation
 validate_backup_params() {
 
   if [[ -d ${TargetDir} ]]; then
-    echo "done"
+    echo "TargetDir is correct!"
   else
     echo "$TargetDir is not valid please try again!"
     exit 0
   fi
 
   if [[ -d ${TargetBackup} ]]; then
-    echo "done"
+    echo "TargetBackup is correct!"
   else
     echo "$TargetBackup is not valid please try again!"
     exit 0
   fi
 
   if [ $# -eq 4 ]; then
-    echo "ok"
+    echo "ok 4 parameters!"
   else
     echo "To be able to use the script, you should do the following:"
     echo "1) directory to be backed up."
@@ -41,30 +41,41 @@ validate_backup_params() {
 }
 
 backup() {
+
+  # check if already taken a backup
+  testFile=${TargetBackup}/".testFile.txt"
+  if [ -f "$testFile" ]; then
+    echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
+    exit 0
+  fi
+
   cp -r ${TargetDir} ${TargetBackup}
-
   data=${TargetBackup}/$(basename $TargetDir)
-
   # echo ${data}
   cd ${data}
   files=$(ls ${data})
-  # echo ${files}
+
   for i in $files; do
     # echo ${i}
     fullDate=$(echo $(date) | sed 'y/ /_/')
-    fullDate=$(echo ${fullDate} | sed 'y/:/_/')
-    echo ${fullDate}
+    fullDate=$(echo ${fullDate} | sed 'y/:/_/')ls-
     tar -czvf ${i}.tar.gz ./${i}
     rm -rf ${i}
+
   done
 
-  $(cd .. && mkdir ${fullDate})
-  
-  # echo $(pwd)
-  for i in $files; do
-    # echo ${i}
-    echo $(date) -r ${i}
-  done
+  $(cd .. && mkdir ${fullDate} && touch .testFile.txt)
+  # changed=$(ls ${TargetDir})
+  # echo ${changed}
+  # for i in ${changed}; do
+  #   echo $(find ${TargetDir}/${i} -mtime -${days})
+  #   tar -czvf ${i}.tar.gz $(find ${TargetDir}/${i} -mtime -${days})
+  #   mv ${i}.tar.gz ${data}
+  # done
+
+  # changedFiles=$(find ${TargetDir} -mtime -${days})
+  # echo ${changedFiles}
+
   # tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
   # cd ..
   # scp -i EC2Naruto.pem -r Data ubuntu@ec2-54-165-173-161.compute-1.amazonaws.com:backup
