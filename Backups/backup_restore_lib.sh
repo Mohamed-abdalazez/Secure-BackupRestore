@@ -123,24 +123,32 @@ validate_restore_params() {
 restore() {
 
   # echo ${TargetBackup} # /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Backups/Data
-  # echo ${TargetDir}
+  #  echo ${TargetDir}
   # echo ${EncryptionKey}
   # echo `pwd`
 
-  files=$(ls ${TargetBackup})
-  # echo ${files}
   cd ${TargetBackup}
-  echo $(pwd)
-  for i in $files; do
-    echo ${i}
-    tar -xf ${i} -C ${TargetDir}
-  done
-  echo $(pwd)
+  cd ..
 
-  ## de
-  # for i in ${tarFiles}; do
-  # gpg -d ${i}.gpg | tar -xvzf -
-  # done
+  gpgFilesTar=$(find -maxdepth 1 -name '*.tar.gz')
+  tar -xf ${gpgFilesTar} -C ${TargetDir}
+
+  name=${gpgFilesTar}
+  name=$(echo ${name} | cut -c 3- | rev | cut -c8- | rev)
+  # echo ${name}
+  cd ..
+  cd $(basename ${TargetDir})
+
+  ## Decryption
+
+  files=$(ls ${name})
+  # echo ${files}
+  cd ${name}
+
+  for i in ${files}; do
+    echo ${i}
+    gpg -d ${i} | tar -xvzf -
+  done
 }
 
 # ./restore.sh /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Backups/Data /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Data_Restored mohamed
