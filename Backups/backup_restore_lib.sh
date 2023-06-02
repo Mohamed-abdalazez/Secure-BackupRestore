@@ -62,7 +62,7 @@ backup() {
   for i in $files; do
     # echo ${i}
     fullDate=$(echo $(date) | sed 'y/ /_/')
-    fullDate=$(echo ${fullDate} | sed 'y/:/_/')ls-
+    fullDate=$(echo ${fullDate} | sed 'y/:/_/')
     tar -czvf ${i}.tar.gz ./${i}
     rm -rf ${i}
 
@@ -72,21 +72,13 @@ backup() {
   # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
   $(cd .. && mkdir ${fullDate} && touch .testFile.txt)
 
-  # changed=$(ls ${TargetDir})
-  # echo ${changed}
-  # for i in ${changed}; do
-  #   echo $(find ${TargetDir}/${i} -mtime -${days})
-  #   tar -czvf ${i}.tar.gz $(find ${TargetDir}/${i} -mtime -${days})
-  #   mv ${i}.tar.gz ${data}
-  # done
-
-  # changedFiles=$(find ${TargetDir} -mtime -${days})
-  # echo ${changedFiles}
-
-  # tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
-  # cd ..
-  # scp -i EC2Naruto.pem -r Data ubuntu@ec2-54-165-173-161.compute-1.amazonaws.com:backup
-  # echo $(pwd)
+  <<validation
+  copy the backup to a remote server
+  tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
+  cd ..
+  scp -i EC2Naruto.pem -r Data ubuntu@ec2-54-165-173-161.compute-1.amazonaws.com:backup
+  echo $(pwd)
+validation
 
 }
 
