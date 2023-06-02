@@ -44,10 +44,10 @@ backup() {
 
   # check if already taken a backup.
   testFile=${TargetBackup}/".testFile.txt"
-  if [ -f "$testFile" ]; then
-    echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
-    exit 0
-  fi
+  # if [ -f "$testFile" ]; then
+  #   echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
+  #   exit 0
+  # fi
 
   # get the directory to be backed up to the backup area.
   cp -r ${TargetDir} ${TargetBackup}
@@ -70,15 +70,28 @@ backup() {
 
   # creating a directory whose name is equivalent to the date taken in the compression process
   # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
-  $(cd .. && mkdir ${fullDate} && touch .testFile.txt)
+  $(cd .. && mkdir $(basename $TargetDir)_${fullDate} && touch .testFile.txt)
+  tarFiles=$(ls ${data})
+  echo ${tarFiles}
 
-  <<validation
+  ## Encryption
+  for i in ${tarFiles}; do
+    tar -cvzf - ${i} | gpg -c --batch --passphrase ${EncryptionKey} >${i}.gpg
+    mv ${i}.gpg ${TargetBackup}/$(basename $TargetDir)_${fullDate}
+  done
+
+  ## de
+  # for i in ${tarFiles}; do
+  # gpg -d ${i}.gpg | tar -xvzf -
+  # done
+
+  <<remoteServer
   copy the backup to a remote server
   tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
   cd ..
   scp -i EC2Naruto.pem -r Data ubuntu@ec2-54-165-173-161.compute-1.amazonaws.com:backup
   echo $(pwd)
-validation
+remoteServer
 
 }
 
