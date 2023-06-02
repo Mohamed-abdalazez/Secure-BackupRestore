@@ -44,10 +44,10 @@ backup() {
 
   # check if already taken a backup.
   testFile=${TargetBackup}/".testFile.txt"
-  # if [ -f "$testFile" ]; then
-  #   echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
-  #   exit 0
-  # fi
+  if [ -f "$testFile" ]; then
+    echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
+    exit 0
+  fi
 
   # get the directory to be backed up to the backup area.
   cp -r ${TargetDir} ${TargetBackup}
@@ -65,7 +65,6 @@ backup() {
     fullDate=$(echo ${fullDate} | sed 'y/:/_/')
     tar -czvf ${i}.tar.gz ./${i}
     rm -rf ${i}
-
   done
 
   # creating a directory whose name is equivalent to the date taken in the compression process
@@ -80,14 +79,12 @@ backup() {
     mv ${i}.gpg ${TargetBackup}/$(basename $TargetDir)_${fullDate}
   done
 
-  ## de
-  # for i in ${tarFiles}; do
-  # gpg -d ${i}.gpg | tar -xvzf -
-  # done
+  # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
+  tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
 
   <<remoteServer
   copy the backup to a remote server
-  tar -czvf ${data}.tar.gz ./$(basename $TargetDir) --remove-files
+
   cd ..
   scp -i EC2Naruto.pem -r Data ubuntu@ec2-54-165-173-161.compute-1.amazonaws.com:backup
   echo $(pwd)
@@ -139,6 +136,11 @@ restore() {
     tar -xf ${i} -C ${TargetDir}
   done
   echo $(pwd)
+
+  ## de
+  # for i in ${tarFiles}; do
+  # gpg -d ${i}.gpg | tar -xvzf -
+  # done
 }
 
 # ./restore.sh /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Backups/Data /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Data_Restored mohamed
