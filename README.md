@@ -5,9 +5,9 @@
 
 To use Secure-BackupRestore tool, you have to pass the parameters correctly on the command line which is:
 
--  4 parameters in the backup case
+-  4 parameters in the backup case.
     - eg. ```./backup.sh /Secure-BackupRestore/Data /Secure-BackupRestore/Backups MOAEMo 13```
--  3 parameters in the backup case
+-  3 parameters in the backup case.
     - eg. ``` ./restore.sh /Secure-BackupRestore/Backups/Data /Secure-BackupRestore/Data_Restored MOAEMo```  
 - The nitty-gritty details about the parameters were shown in the Drafts folder.
 
@@ -27,3 +27,10 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
 
 - When copying the backup to a remote server, in my case, ```AWS EC2 instance```.
 - so you have to set up yours in this part.
+- eg. ```scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup```
+
+### Finally 
+
+- Setting up GPG in your machine.
+- The nitty-gritty details about each process were shown in the Drafts folder.
+- Have fun:).
