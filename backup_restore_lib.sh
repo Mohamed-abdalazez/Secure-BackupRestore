@@ -1,10 +1,10 @@
 #!/bin/bash
 
 <<validation
-validate if the two directories :  
-1) directory to be backed up.
-2) directory which should store eventually the backup.
-are correct or not
+1) Check whether the directory to be backed up exists or not, 
+as well as the directory where the backup should eventually be stored.
+2) Verifying that the number of parameters is 4
+3) Verifying that the number of days is an integer number and nothing else
 validation
 
 validate_backup_params() {
@@ -54,13 +54,11 @@ backup() {
 
   # A new path directory to be backed up in the backup area.
   data=${TargetBackup}/$(basename $TargetDir)
-
   cd ${data}
   files=$(ls ${data})
 
   # Compress all files inside the directory using tar.
   for i in $files; do
-    # echo ${i}
     fullDate=$(echo $(date) | sed 'y/ /_/')
     fullDate=$(echo ${fullDate} | sed 'y/:/_/')
     tar -czvf ${i}.tar.gz ./${i}
@@ -70,10 +68,9 @@ backup() {
   # creating a directory whose name is equivalent to the date taken in the compression process
   # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
   $(cd .. && mkdir $(basename $TargetDir)_${fullDate} && touch .testFile.txt)
-  tarFiles=$(ls ${data})
-  echo ${tarFiles}
 
   ## Encryption
+  tarFiles=$(ls ${data})
   for i in ${tarFiles}; do
     tar -cvzf - ${i} | gpg -c --batch --passphrase ${EncryptionKey} >${i}.gpg
     mv ${i}.gpg ${TargetBackup}/$(basename $TargetDir)_${fullDate}
@@ -82,14 +79,10 @@ backup() {
   # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
   tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
 
-  <<remoteServer
-  copy the backup to a remote server
-
+  # copy the backup to a remote server
   cd ..
-  scp -i EC2Naruto.pem -r Data ubuntu@ec2-54-165-173-161.compute-1.amazonaws.com:backup
-  echo $(pwd)
-remoteServer
-
+  backup=$(basename $TargetDir)_${fullDate}.tar.gz
+  scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup
 }
 
 validate_restore_params() {
