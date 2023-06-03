@@ -31,6 +31,7 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
 
 ### Finally 
 
+- Data directory, my own directory, I want to backup. It is yours to backup any directory on your machine.
 - Setting up GPG in your machine.
 - The nitty-gritty details about each process were shown in the Drafts folder.
 - Have fun:).

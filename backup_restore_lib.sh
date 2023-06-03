@@ -80,9 +80,9 @@ backup() {
   tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
 
   # copy the backup to a remote server
-  cd ..
-  backup=$(basename $TargetDir)_${fullDate}.tar.gz
-  scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup
+  # cd ..
+  # backup=$(basename $TargetDir)_${fullDate}.tar.gz
+  # scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup
 }
 
 <<validation
