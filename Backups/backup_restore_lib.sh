@@ -114,8 +114,7 @@ validate_restore_params() {
     echo "To be able to use the script, you should do the following:"
     echo "1) directory to be backed up."
     echo "2) directory which should store eventually the backup."
-    echo "3) encryption key that you should use to encrypt your backup."
-    echo "4) number of days (n) that the script should use to backup only the changed files during the last n days."
+    echo "3) DecryptionKey key that you should use to DecryptionKey your data."
     exit 0
   fi
 }
@@ -147,7 +146,7 @@ restore() {
 
   for i in ${files}; do
     echo ${i}
-    gpg -d ${i} | tar -xvzf -
+    gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
   done
 }
 
