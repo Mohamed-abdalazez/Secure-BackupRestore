@@ -85,6 +85,12 @@ backup() {
   scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup
 }
 
+<<validation
+1) Check whether the directory that contains the backup exists or not, 
+as well as the directory that the backup should be restored to.
+2) Verifying that the number of parameters is 3
+validation
+
 validate_restore_params() {
 
   if [[ -d ${TargetDir} ]]; then
@@ -105,19 +111,16 @@ validate_restore_params() {
     echo "ok"
   else
     echo "To be able to use the script, you should do the following:"
-    echo "1) directory to be backed up."
-    echo "2) directory which should store eventually the backup."
-    echo "3) DecryptionKey key that you should use to DecryptionKey your data."
+    echo "1) the directory that contains the backup."
+    echo "2) the directory that the backup should be restored to."
+    echo "3) DecryptionKey key that you should use to Decrypt your data."
     exit 0
   fi
 }
 
 restore() {
 
-  # echo ${TargetBackup} # /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Backups/Data
-  #  echo ${TargetDir}
-  # echo ${EncryptionKey}
-  # echo `pwd`
+  # Extracting the backup file, which is <original directory name>_<date>.tgz
 
   cd ${TargetBackup}
   cd ..
@@ -127,20 +130,18 @@ restore() {
 
   name=${gpgFilesTar}
   name=$(echo ${name} | cut -c 3- | rev | cut -c8- | rev)
-  # echo ${name}
   cd ..
   cd $(basename ${TargetDir})
+
+  # Files are Decrypted using the Decryption Key provided on the command line
 
   ## Decryption
 
   files=$(ls ${name})
   # echo ${files}
   cd ${name}
-
   for i in ${files}; do
     echo ${i}
     gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
   done
 }
-
-# ./restore.sh /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Backups/Data /home/mohamed/Desktop/Safrot/Projects/Secure-BackupRestore/Data_Restored mohamed
