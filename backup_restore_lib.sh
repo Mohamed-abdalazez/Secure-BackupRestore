@@ -44,9 +44,19 @@ backup() {
 
   # check if already taken a backup.
   testFile=${TargetBackup}/".testFile.txt"
+
+  changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
+  changedFilesArr=()
+  for i in ${changedFiles}; do
+    changedFilesArr+=($(basename ${i}))
+  done
   if [ -f "$testFile" ]; then
-    echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
-    exit 0
+    if [ -n "$changedFiles" ]; then
+      $(rm ${testFile})
+    else
+      echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
+      exit 0
+    fi
   fi
 
   # get the directory to be backed up to the backup area.
@@ -55,10 +65,10 @@ backup() {
   # A new path directory to be backed up in the backup area.
   data=${TargetBackup}/$(basename $TargetDir)
   cd ${data}
-  files=$(ls ${data})
+  # files=$(ls ${data})
 
   # Compress all files inside the directory using tar.
-  for i in $files; do
+  for i in ${changedFilesArr[@]}; do
     fullDate=$(echo $(date) | sed 'y/ /_/')
     fullDate=$(echo ${fullDate} | sed 'y/:/_/')
     tar -czvf ${i}.tar.gz ./${i}
