@@ -51,7 +51,7 @@ Encryption() {
 backup() {
 
   # check if already taken a backup.
-  testFile=${TargetBackup}/".testFile.txt"
+  testFile=${TargetBackup}/".$(basename $TargetDir).txt"
 
   changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
   changedFilesArr=()
@@ -104,7 +104,7 @@ backup() {
 
     # creating a directory whose name is equivalent to the date taken in the compression process
     # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
-    $(cd .. && mkdir $(basename $TargetDir)_${fullDate} && touch .testFile.txt)
+    $(cd .. && mkdir $(basename $TargetDir)_${fullDate} && touch .$(basename $TargetDir).txt)
 
     ## Encryption
     Encryption ${data}
