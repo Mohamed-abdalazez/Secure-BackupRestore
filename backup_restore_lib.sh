@@ -40,6 +40,14 @@ validate_backup_params() {
   fi
 }
 
+Encryption() {
+  tarFiles=$(ls ${data})
+  for i in ${tarFiles}; do
+    tar -cvzf - ${i} | gpg -c --batch --passphrase ${EncryptionKey} >${i}.gpg
+    mv ${i}.gpg ${TargetBackup}/$(basename $TargetDir)_${fullDate}
+  done
+}
+
 backup() {
 
   # check if already taken a backup.
@@ -52,47 +60,63 @@ backup() {
   done
   if [ -f "$testFile" ]; then
     if [ -n "$changedFiles" ]; then
-      $(rm ${testFile})
-    else
-      echo "You've already taken a backup. If anything changes to the original files, will be modified immediately when you run the script again."
-      exit 0
+
+      $(mkdir temp)
+      cd temp
+      for i in ${changedFilesArr[@]}; do
+        echo i ${i}
+        cp -r ${TargetDir}/${i} ${TargetBackup}/temp
+        fullDate=$(echo $(date) | sed 'y/ /_/')
+        fullDate=$(echo ${fullDate} | sed 'y/:/_/')
+        tar -czvf ${i}.tar.gz ./${i}
+        rm -rf ${i}
+      done
+      # move all the temp into the main backup
+      files=$(ls)
+      for i in ${files}; do
+        mv ${i} ${TargetBackup}/$(basename $TargetDir)
+      done
+
+      data=${TargetBackup}/$(basename $TargetDir)
+      cd ${data}
+      files=$(ls ${data})
+      $(cd .. && mkdir $(basename $TargetDir)_${fullDate})
+      Encryption ${data}
+      # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
+      tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
     fi
-  fi
+  else
+    # get the directory to be backed up to the backup area.
+    cp -r ${TargetDir} ${TargetBackup}
 
-  # get the directory to be backed up to the backup area.
-  cp -r ${TargetDir} ${TargetBackup}
+    # A new path directory to be backed up in the backup area.
+    data=${TargetBackup}/$(basename $TargetDir)
+    cd ${data}
+    files=$(ls ${data})
 
-  # A new path directory to be backed up in the backup area.
-  data=${TargetBackup}/$(basename $TargetDir)
-  cd ${data}
-  # files=$(ls ${data})
+    # Compress all files inside the directory using tar.
+    for i in ${files[@]}; do
+      fullDate=$(echo $(date) | sed 'y/ /_/')
+      fullDate=$(echo ${fullDate} | sed 'y/:/_/')
+      tar -czvf ${i}.tar.gz ./${i}
+      rm -rf ${i}
+    done
 
-  # Compress all files inside the directory using tar.
-  for i in ${changedFilesArr[@]}; do
-    fullDate=$(echo $(date) | sed 'y/ /_/')
-    fullDate=$(echo ${fullDate} | sed 'y/:/_/')
-    tar -czvf ${i}.tar.gz ./${i}
-    rm -rf ${i}
-  done
+    # creating a directory whose name is equivalent to the date taken in the compression process
+    # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
+    $(cd .. && mkdir $(basename $TargetDir)_${fullDate} && touch .testFile.txt)
 
-  # creating a directory whose name is equivalent to the date taken in the compression process
-  # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
-  $(cd .. && mkdir $(basename $TargetDir)_${fullDate} && touch .testFile.txt)
+    ## Encryption
+    Encryption ${data}
 
-  ## Encryption
-  tarFiles=$(ls ${data})
-  for i in ${tarFiles}; do
-    tar -cvzf - ${i} | gpg -c --batch --passphrase ${EncryptionKey} >${i}.gpg
-    mv ${i}.gpg ${TargetBackup}/$(basename $TargetDir)_${fullDate}
-  done
-
-  # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
-  tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
+    # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
+    tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
 
   # copy the backup to a remote server
   # cd ..
   # backup=$(basename $TargetDir)_${fullDate}.tar.gz
   # scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup
+  fi
 }
 
 <<validation
@@ -136,22 +160,28 @@ restore() {
   cd ..
 
   gpgFilesTar=$(find -maxdepth 1 -name '*.tar.gz')
-  tar -xf ${gpgFilesTar} -C ${TargetDir}
+  echo ${gpgFilesTar}
 
-  name=${gpgFilesTar}
-  name=$(echo ${name} | cut -c 3- | rev | cut -c8- | rev)
-  cd ..
-  cd $(basename ${TargetDir})
+  for i in ${gpgFilesTar}; do
+    tar -xf ${i} -C ${TargetDir}
+  done
 
-  # Files are Decrypted using the Decryption Key provided on the command line
+  for i in ${gpgFilesTar}; do
+    name=${i}
+    name=$(echo ${name} | cut -c 3- | rev | cut -c8- | rev)
+    cd ..
+    cd $(basename ${TargetDir})
 
-  ## Decryption
+    # Files are Decrypted using the Decryption Key provided on the command line
 
-  files=$(ls ${name})
-  # echo ${files}
-  cd ${name}
-  for i in ${files}; do
-    echo ${i}
-    gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
+    ## Decryption
+
+    files=$(ls ${name})
+    # echo ${files}
+    cd ${name}
+    for i in ${files}; do
+      echo ${i}
+      gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
+    done
   done
 }
