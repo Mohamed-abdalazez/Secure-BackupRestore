@@ -52,7 +52,7 @@ backup() {
 
   # check if already taken a backup.
   testFile=${TargetBackup}/".$(basename $TargetDir).txt"
-
+  ifChanged=0
   changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
   changedFilesArr=()
   for i in ${changedFiles}; do
@@ -60,7 +60,7 @@ backup() {
   done
   if [ -f "$testFile" ]; then
     if [ -n "$changedFiles" ]; then
-
+      ifChanged=1
       $(mkdir temp)
       cd temp
       for i in ${changedFilesArr[@]}; do
@@ -77,13 +77,19 @@ backup() {
         mv ${i} ${TargetBackup}/$(basename $TargetDir)
       done
 
+      if [ ${ifChanged} -eq 1 ]; then
+        cd ..
+        $(find . -name "*.tar.gz" -maxdepth 1 -type f -delete)
+      fi
       data=${TargetBackup}/$(basename $TargetDir)
       cd ${data}
       files=$(ls ${data})
       $(cd .. && mkdir $(basename $TargetDir)_${fullDate})
       Encryption ${data}
       # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
+
       tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
+
     fi
   else
     # get the directory to be backed up to the backup area.
