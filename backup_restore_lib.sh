@@ -186,8 +186,15 @@ restore() {
     # echo ${files}
     cd ${name}
     for i in ${files}; do
-      echo ${i}
+      echo hi += ${i}
       gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
+      rm ${i}
+    done
+
+    files=$(ls)
+    for i in ${files}; do
+      tar -xf ${i}
+      rm ${i}
     done
   done
 }
