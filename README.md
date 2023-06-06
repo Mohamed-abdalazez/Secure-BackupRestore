@@ -16,6 +16,7 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
 -  ```backup_restore_lib.sh``` that includes 4 functions:
   
     - validate_backup_params() {...}
+    - Encryption() {...}
     - backup() {...}
     - validate_restore_params() {...}
     - restore() {...}

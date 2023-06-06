@@ -52,7 +52,8 @@ backup() {
 
   # check if already taken a backup.
   testFile=${TargetBackup}/".$(basename $TargetDir).txt"
-  ifChanged=0
+
+  ifChanged=0 # to check if changed files have already synced.
   changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
   changedFilesArr=()
   for i in ${changedFiles}; do
@@ -190,9 +191,8 @@ restore() {
     cd ..
     cd $(basename ${TargetDir})
 
+    # Decryption
     # Files are Decrypted using the Decryption Key provided on the command line
-
-    ## Decryption
 
     files=$(ls ${name})
     # echo ${files}
