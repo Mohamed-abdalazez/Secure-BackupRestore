@@ -90,6 +90,13 @@ backup() {
 
       tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
 
+      <<remote_server
+      cd ..
+      backup=$(find . -name "*.tar.gz" -maxdepth 1 -type f)
+      for i in ${backup}; do
+        scp -i EC2Naruto.pem ${i} ubuntu@ec2-54-172-142-87.compute-1.amazonaws.com:backups
+      done
+remote_server
     fi
   else
     # get the directory to be backed up to the backup area.
@@ -118,10 +125,15 @@ backup() {
     # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
     tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
 
-  # copy the backup to a remote server
-  # cd ..
-  # backup=$(basename $TargetDir)_${fullDate}.tar.gz
-  # scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup
+    # copy the backup to a remote server
+
+    <<remote_server
+    cd ..
+    backup=$(find . -name "*.tar.gz" -maxdepth 1 -type f)
+    for i in ${backup}; do
+      scp -i EC2Naruto.pem ${i} ubuntu@ec2-54-172-142-87.compute-1.amazonaws.com:backups
+    done
+remote_server
   fi
 }
 
