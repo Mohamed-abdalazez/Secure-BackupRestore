@@ -79,7 +79,7 @@ backup() {
 
       if [ ${ifChanged} -eq 1 ]; then
         cd ..
-        $(find . -name "*.tar.gz" -maxdepth 1 -type f -delete)
+        $(find . -name "$(basename $TargetDir)*.tar.gz" -maxdepth 1 -type f -delete)
       fi
       data=${TargetBackup}/$(basename $TargetDir)
       cd ${data}
