@@ -6,6 +6,6 @@ DecryptionKey=$3
 
 source ../backup_restore_lib.sh
 
-validate_restore_params ${TargetBackup} ${TargetDir} ${DecryptionKey}
+validate_restore_params ${@}
 
 restore ${TargetBackup} ${TargetDir} ${DecryptionKey}
