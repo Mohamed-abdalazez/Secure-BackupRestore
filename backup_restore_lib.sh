@@ -48,6 +48,13 @@ Encryption() {
   done
 }
 
+remote_server() {
+  backup=$(find ${target} -name "*.tar.gz" -maxdepth 1 -type f)
+  for i in ${backup}; do
+    scp -i naruto.pem ${i} ubuntu@ec2-54-209-139-74.compute-1.amazonaws.com:backups
+  done
+}
+
 backup() {
 
   # check if already taken a backup.
@@ -91,13 +98,10 @@ backup() {
 
       tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
 
-      <<remote_server
-      cd ..
-      backup=$(find . -name "*.tar.gz" -maxdepth 1 -type f)
-      for i in ${backup}; do
-        scp -i EC2Naruto.pem ${i} ubuntu@ec2-54-172-142-87.compute-1.amazonaws.com:backups
-      done
-remote_server
+      # cd ..
+      # target=$(pwd)
+      # remote_server ${target}
+
     fi
   else
     # get the directory to be backed up to the backup area.
@@ -128,13 +132,9 @@ remote_server
 
     # copy the backup to a remote server
 
-    <<remote_server
-    cd ..
-    backup=$(find . -name "*.tar.gz" -maxdepth 1 -type f)
-    for i in ${backup}; do
-      scp -i EC2Naruto.pem ${i} ubuntu@ec2-54-172-142-87.compute-1.amazonaws.com:backups
-    done
-remote_server
+    # cd ..
+    # target=$(pwd)
+    # remote_server ${target}
   fi
 }
 
