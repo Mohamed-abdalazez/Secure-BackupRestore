@@ -48,6 +48,21 @@ Encryption() {
   done
 }
 
+Decryption() {
+  cd ${name}
+  for i in ${files}; do
+    echo hi += ${i}
+    gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
+    rm ${i}
+  done
+
+  files=$(ls)
+  for i in ${files}; do
+    tar -xf ${i}
+    rm ${i}
+  done
+}
+
 remote_server() {
   backup=$(find ${target} -name "*.tar.gz" -maxdepth 1 -type f)
   for i in ${backup}; do
@@ -196,17 +211,8 @@ restore() {
 
     files=$(ls ${name})
     # echo ${files}
-    cd ${name}
-    for i in ${files}; do
-      echo hi += ${i}
-      gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
-      rm ${i}
-    done
 
-    files=$(ls)
-    for i in ${files}; do
-      tar -xf ${i}
-      rm ${i}
-    done
+    Decryption ${files}
+
   done
 }
