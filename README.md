@@ -20,6 +20,7 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
   
     - validate_backup_params() {...}
     - Encryption() {...}
+    - remote_server() { ... }
     - backup() {...}
     - validate_restore_params() {...}
     - restore() {...}
