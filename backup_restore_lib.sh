@@ -51,7 +51,7 @@ Encryption() {
 Decryption() {
   cd ${name}
   for i in ${files}; do
-    echo hi += ${i}
+    # echo hi += ${i}
     gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
     rm ${i}
   done
@@ -72,85 +72,43 @@ remote_server() {
 
 backup() {
 
-  # check if already taken a backup.
-  testFile=${TargetBackup}/".$(basename $TargetDir).txt"
-
-  ifChanged=0 # to check if changed files have already synced.
   changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
-  changedFilesArr=()
+  $(mkdir temp)
   for i in ${changedFiles}; do
-    changedFilesArr+=($(basename ${i}))
+    cp -r ${i} ${TargetBackup}/temp
   done
-  if [ -f "$testFile" ]; then
-    if [ -n "$changedFiles" ]; then
-      ifChanged=1
-      $(mkdir temp)
-      cd temp
-      for i in ${changedFilesArr[@]}; do
-        echo i ${i}
-        cp -r ${TargetDir}/${i} ${TargetBackup}/temp
-        fullDate=$(echo $(date) | sed 'y/ /_/')
-        fullDate=$(echo ${fullDate} | sed 'y/:/_/')
-        tar -czvf ${i}.tar.gz ./${i}
-        rm -rf ${i}
-      done
-      # move all the temp into the main backup
-      files=$(ls)
-      for i in ${files}; do
-        mv ${i} ${TargetBackup}/$(basename $TargetDir)
-      done
 
-      if [ ${ifChanged} -eq 1 ]; then
-        cd ..
-        $(find . -name "$(basename $TargetDir)*.tar.gz" -maxdepth 1 -type f -delete)
-      fi
-      data=${TargetBackup}/$(basename $TargetDir)
-      cd ${data}
-      files=$(ls ${data})
-      $(cd .. && mkdir $(basename $TargetDir)_${fullDate})
-      Encryption ${data}
-      # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
+  # A new path directory to be backed up in the backup area.
+  data=${TargetBackup}/temp
+  cd ${data}
+  files=$(ls ${data})
 
-      tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
+  # Compress all files inside the directory using tar.
+  for i in ${files[@]}; do
+    fullDate=$(echo $(date) | sed 'y/ /_/')
+    fullDate=$(echo ${fullDate} | sed 'y/:/_/')
+    tar -czvf ${i}.tar.gz ./${i}
+    rm -rf ${i}
+  done
 
-      # cd ..
-      # target=$(pwd)
-      # remote_server ${target}
+  # creating a directory whose name is equivalent to the date taken in the compression process
+  # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
+  $(cd .. && mkdir $(basename $TargetDir)_${fullDate})
 
-    fi
-  else
-    # get the directory to be backed up to the backup area.
-    cp -r ${TargetDir} ${TargetBackup}
+  ## Encryption
+  Encryption ${data}
 
-    # A new path directory to be backed up in the backup area.
-    data=${TargetBackup}/$(basename $TargetDir)
-    cd ${data}
-    files=$(ls ${data})
+  # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
+  tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
+  rm -rf ${TargetBackup}/temp
 
-    # Compress all files inside the directory using tar.
-    for i in ${files[@]}; do
-      fullDate=$(echo $(date) | sed 'y/ /_/')
-      fullDate=$(echo ${fullDate} | sed 'y/:/_/')
-      tar -czvf ${i}.tar.gz ./${i}
-      rm -rf ${i}
-    done
+  # Push Encrypted backup to a remote server (EC2 instance)
+  <<PushToEC2
+    cd ..
+    target=$(pwd)
+    remote_server ${target}
+PushToEC2
 
-    # creating a directory whose name is equivalent to the date taken in the compression process
-    # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
-    $(cd .. && mkdir $(basename $TargetDir)_${fullDate} && touch .$(basename $TargetDir).txt)
-
-    ## Encryption
-    Encryption ${data}
-
-    # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
-    tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
-
-    # copy the backup to a remote server
-
-    # cd ..
-    # target=$(pwd)
-    # remote_server ${target}
-  fi
 }
 
 <<validation
@@ -188,11 +146,9 @@ validate_restore_params() {
 
 restore() {
 
-  # Extracting the backup file, which is <original directory name>_<date>.tgz
+  # Extracting the backup file, which is <original directory name>_<date>.tar.gz
 
   cd ${TargetBackup}
-  cd ..
-
   gpgFilesTar=$(find -maxdepth 1 -name '*.tar.gz')
   echo ${gpgFilesTar}
 
@@ -206,12 +162,9 @@ restore() {
     cd ..
     cd $(basename ${TargetDir})
 
-    # Decryption
-    # Files are Decrypted using the Decryption Key provided on the command line
+    # Decryption, Files are Decrypted using the Decryption Key provided on the command line
 
     files=$(ls ${name})
-    # echo ${files}
-
     Decryption ${files}
 
   done
