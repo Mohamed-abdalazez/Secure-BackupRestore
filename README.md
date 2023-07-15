@@ -4,7 +4,7 @@
 
 <img alt="Overview" src="Drafts/1_Overview.png" />
 
-### how to use your backup tool
+### How to use your backup tool
 
 To use Secure-BackupRestore tool, you have to pass the parameters correctly on the command line which is:
 
@@ -14,9 +14,9 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
     - eg. ``` ./restore.sh /Secure-BackupRestore/Backups/Data /Secure-BackupRestore/Data_Restored MOAEMo```  
 - The nitty-gritty details about the parameters were shown in the Drafts folder.
 
-### structure of the script
+### Structure of the script
 
--  ```backup_restore_lib.sh``` that includes 4 functions:
+-  ```backup_restore_lib.sh``` that includes 7 functions:
   
     - validate_backup_params() {...}
     - Encryption() {...}
@@ -34,6 +34,17 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
 - When copying the backup to a remote server, in my case, ```AWS EC2 instance```.
 - so you have to set up yours in this part.
 - eg. ```scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup```
+- If you want to take a backup of a particular directory, regardless of the backup of the changed files during the last n days only. use this code in ```buckup()``` function.
+     ```bash
+    # get the directory to be backed up to the backup area.
+    cp -r ${TargetDir} ${TargetBackup}
+
+    # A new path directory to be backed up in the backup area.
+    data=${TargetBackup}/$(basename $TargetDir)
+    cd ${data}
+    files=$(ls ${data})
+     ```
+
 
 ### Finally 
 
@@ -41,4 +52,4 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
 - Setting up GPG in your machine.
 - The nitty-gritty details about each process were shown in the Drafts folder.
 - Under improvement.
-- Have fun:).
+- Feel free to contribute, Have fun:).
