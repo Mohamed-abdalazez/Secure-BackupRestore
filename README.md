@@ -9,10 +9,17 @@
 To use Secure-BackupRestore tool, you have to pass the parameters correctly on the command line which is:
 
 -  4 parameters in the backup case.
+    - directory to be backed up.
+    - directory which should store eventually the backup.
+    - encryption key that you should use to encrypt your backup.
+    - number of days (n) that the script should use to backup only the changed files during the last n days.
     - eg. ```./backup.sh /Secure-BackupRestore/Data /Secure-BackupRestore/Backups MOAEMo 13```
--  3 parameters in the backup case.
-    - eg. ``` ./restore.sh /Secure-BackupRestore/Backups/Data /Secure-BackupRestore/Data_Restored MOAEMo```  
-- The nitty-gritty details about the parameters were shown in the Drafts folder.
+-  3 parameters in the restore case.
+    - the directory that contains the backup.
+    - the directory that the backup should be restored to.
+    - Decryption Key key that you should use to Decrypt your data.
+    - eg. ``` ./restore.sh /Secure-BackupRestore/Backups/Data /Secure-BackupRestore/Data_Restored MOAEMo```
+
 
 ### Structure of the script
 
