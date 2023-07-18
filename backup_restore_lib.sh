@@ -73,6 +73,7 @@ remote_server() {
 backup() {
 
   changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
+  cd ${TargetBackup}
   $(mkdir temp)
   for i in ${changedFiles}; do
     cp -r ${i} ${TargetBackup}/temp
