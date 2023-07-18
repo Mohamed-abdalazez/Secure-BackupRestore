@@ -53,10 +53,82 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
      ```
 
 
+### crontab
+
+- You have to enable cron on your machine.
+  ```console
+  moabdelaziz@pop-os:~$ sudo systemctl enable cron
+  ```
+- then type this command in your terminal to configure the scheduled task.
+  ```console
+  moabdelaziz@pop-os:~$ crontab -e
+  ```
+- Now Edit this file to introduce tasks to be run by cron.There is some default information, as you see.
+  ```console
+      GNU nano 6.2                                                                   /tmp/crontab.ZwipWk/crontab                                                                             
+    # Edit this file to introduce tasks to be run by cron.
+    # 
+    # Each task to run has to be defined through a single line
+    # indicating with different fields when the task will be run
+    # and what command to run for the task
+    # 
+    # To define the time you can provide concrete values for
+    # minute (m), hour (h), day of month (dom), month (mon),
+    # and day of week (dow) or use '*' in these fields (for 'any').
+    # 
+    # Notice that tasks will be started based on the cron's system
+    # daemon's notion of time and timezones.
+    # 
+    # Output of the crontab jobs (including errors) is sent through
+    # email to the user the crontab file belongs to (unless redirected).
+    # 
+    # For example, you can run a backup of all your user accounts
+    # at 5 a.m every week with:
+    # 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+    # 
+    # For more information see the manual pages of crontab(5) and cron(8)
+    # 
+    # m h  dom mon dow   command
+
+
+    * * * * * /bin/bash /home/moabdelaziz/Secure-BackupRestore/Backups/backup.sh >> /home/moabdelaziz/output.txt
+  ```
+
+- BTW, if you run ```cat /etc/crontab``` You will find more information, as you see.
+
+   ```console
+  moabdelaziz@pop-os:~$ cat /etc/crontab
+  # /etc/crontab: system-wide crontab
+  # Unlike any other crontab you don't have to run the `crontab'
+  # command to install the new version when you edit this file
+  # and files in /etc/cron.d. These files also have username fields,
+  # that none of the other crontabs do.
+
+  SHELL=/bin/sh
+  # You can also override PATH, but by default, newer versions inherit it from the environment
+  #PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+    
+  # Example of job definition:
+  # .---------------- minute (0 - 59)
+  # |  .------------- hour (0 - 23)
+  # |  |  .---------- day of month (1 - 31)
+  # |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+  # |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+  # |  |  |  |  |
+  # *  *  *  *  * user-name command to be executed
+  17 *	* * *	root    cd / && run-parts --report /etc/cron.hourly
+  25 6	* * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+  47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+  52 6	1 * *	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+  
+  ```
+- You can use [crontab.guru](https://crontab.guru/#*_*_*_*_*) it will be useful.
+- When you source from ```backup_restore_lib.sh``` in ```backup.sh```, you have to use the absolute path.
+- For more information about cron, I recommend:
+    - [Scheduling Tasks with Cron](https://www.youtube.com/watch?v=7cbP7fzn0D8)
 ### Finally 
 
 - Data directory, my own directory, I want to backup. It is yours to backup any directory on your machine.
 - Setting up GPG in your machine.
-- The nitty-gritty details about each process were shown in the Drafts folder.
 - Under improvement.
 - Feel free to contribute, Have fun:).
