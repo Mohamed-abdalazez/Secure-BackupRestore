@@ -124,6 +124,32 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
   ```
 - You can use [crontab.guru](https://crontab.guru/#*_*_*_*_*) it will be useful.
 - When you source from ```backup_restore_lib.sh``` in ```backup.sh```, you have to use the absolute path.
+- In this case, I put the parameters in the ```.env``` file and referenced it in buckup.sh with an absolute path, but you can do whatever you want. ex.
+  - ```.env```
+    
+      ```txt
+       TargetDir=/home/moabdelaziz/Secure-BackupRestore/Data
+       TargetBackup=/home/moabdelaziz/Secure-BackupRestore/Backups
+       EncryptionKey=PASS
+       days=12
+      ```
+  - ```backup.sh```
+    
+      ```bash
+        #!/bin/bash
+      
+        source /home/moabdelaziz/Secure-BackupRestore/backup_restore_lib.sh
+        source /home/moabdelaziz/Secure-BackupRestore/Backups/.env
+      
+        TargetDir=$TargetDir
+        TargetBackup=$TargetBackup
+        EncryptionKey=$EncryptionKey
+        days=$days
+
+        validate_backup_params ${TargetDir} ${TargetBackup} ${EncryptionKey} ${days}
+        backup ${TargetDir} ${TargetBackup}
+      
+      ```
 - For more information about cron, I recommend:
     - [Scheduling Tasks with Cron](https://www.youtube.com/watch?v=7cbP7fzn0D8)
 ### Finally 
