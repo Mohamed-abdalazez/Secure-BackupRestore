@@ -41,6 +41,10 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
 - When copying the backup to a remote server, in my case, ```AWS EC2 instance```.
 - so you have to set up yours in this part.
 - eg. ```scp -i EC2Naruto.pem ${backup} ubuntu@ec2-54-197-112-106.compute-1.amazonaws.com:backup```
+- Data directory, my own directory, I want to backup. It is yours to backup any directory on your machine.
+- Setting up GPG in your machine.
+- you have to install rename on your machine first
+    - ```sudo apt install rename``` 
 - If you want to take a backup of a particular directory, regardless of the backup of the changed files during the last n days only. use this code in ```buckup()``` function.
      ```bash
     # get the directory to be backed up to the backup area.
@@ -154,7 +158,5 @@ To use Secure-BackupRestore tool, you have to pass the parameters correctly on t
     - [Scheduling Tasks with Cron](https://www.youtube.com/watch?v=7cbP7fzn0D8)
 ### Finally 
 
-- Data directory, my own directory, I want to backup. It is yours to backup any directory on your machine.
-- Setting up GPG in your machine.
 - Under improvement.
 - Feel free to contribute, Have fun:).
