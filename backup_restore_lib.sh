@@ -72,6 +72,11 @@ remote_server() {
 
 backup() {
 
+  # Replacing the spaces in the target directory with underscores first
+  # but you have to install rename on your machine first
+  # sudo apt install rename 
+  find ${TargetDir} -name "* *" -type d | rename 's/ /_/g' 
+  find ${TargetDir} -name "* *" -type f | rename 's/ /_/g'
   changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
   cd ${TargetBackup}
   $(mkdir temp)
