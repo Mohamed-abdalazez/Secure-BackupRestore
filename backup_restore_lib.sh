@@ -70,51 +70,47 @@ remote_server() {
   done
 }
 
-backup() {
+yalla_backup() {
 
+  cd "$TargetBackup"
+  # Output file
+  output_file="backup_metadata.txt"
+  # Backup information
+  date_time=$(date +"%Y-%m-%d %H:%M:%S")
+  user_info=$(id)
+  backup_start_time=$(date +"%Y-%m-%d %H:%M:%S")
+  backup_source="$TargetDir"
+  backup_destination="$TargetBackup"
+
+  # Backup
   # Replacing the spaces in the target directory with underscores first
   # but you have to install rename on your machine first
-  # sudo apt install rename 
-  find ${TargetDir} -name "* *" -type d | rename 's/ /_/g' 
+  # sudo apt install rename
+  find ${TargetDir} -name "* *" -type d | rename 's/ /_/g'
   find ${TargetDir} -name "* *" -type f | rename 's/ /_/g'
-  changedFiles=$(find ${TargetDir} -maxdepth 1 -mindepth 1 -mtime -${days})
-  cd ${TargetBackup}
-  $(mkdir temp)
-  for i in ${changedFiles}; do
-    cp -r ${i} ${TargetBackup}/temp
-  done
 
-  # A new path directory to be backed up in the backup area.
-  data=${TargetBackup}/temp
-  cd ${data}
-  files=$(ls ${data})
+  backup_command="rsync -av "$TargetDir" "$TargetBackup""
 
-  # Compress all files inside the directory using tar.
-  for i in ${files[@]}; do
-    fullDate=$(echo $(date) | sed 'y/ /_/')
-    fullDate=$(echo ${fullDate} | sed 'y/:/_/')
-    tar -czvf ${i}.tar.gz ./${i}
-    rm -rf ${i}
-  done
+  # Run the backup command
+  $backup_command
 
-  # creating a directory whose name is equivalent to the date taken in the compression process
-  # creating a Heddin .testFile.txt file to use it to check if already taken a backup or not.
-  $(cd .. && mkdir $(basename $TargetDir)_${fullDate})
+  # Backup end time *Backup information*
+  backup_end_time=$(date +"%Y-%m-%d %H:%M:%S")
 
-  ## Encryption
-  Encryption ${data}
+  # Save metadata to the output file
+  echo "Date and Time: $date_time" >"$output_file"
+  echo -e "\nUser Information:\n$user_info" >>"$output_file"
+  echo -e "\nBackup Start Time: $backup_start_time" >>"$output_file"
+  echo -e "Backup End Time: $backup_end_time" >>"$output_file"
+  echo -e "Backup Source: $backup_source" >>"$output_file"
+  echo -e "Backup Destination: $backup_destination" >>"$output_file"
+  echo -e "Backup Command: $backup_command" >>"$output_file"
+  # Done
+  echo "Backup Done :)"
+}
 
-  # compress <original directory name>_<date> to <original directory name>_<date>.tgz which is contain the final "name".tar.gz.gpg and remove the original one.
-  tar -czvf ${TargetBackup}/$(basename $TargetDir)_${fullDate}.tar.gz ../$(basename $TargetDir)_${fullDate} --remove-files
-  rm -rf ${TargetBackup}/temp
-
-  # Push Encrypted backup to a remote server (EC2 instance)
-  <<PushToEC2
-    cd ..
-    target=$(pwd)
-    remote_server ${target}
-PushToEC2
-
+backup() {
+  yalla_backup "$TargetBackup" "$TargetDir"
 }
 
 <<validation
