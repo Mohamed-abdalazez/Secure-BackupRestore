@@ -70,17 +70,22 @@ remote_server() {
   done
 }
 
-yalla_backup() {
-
+who_backup() {
   cd "$TargetBackup"
+
+  unique_identifier=$(date +"%Y%m%d%H%M%S")
+  hash=$(echo -n "$unique_identifier" | shasum | awk '{print $1}')
+  hash=$(echo "$hash" | tr -d '[:space:]')
+
   # Output file
-  output_file="backup_metadata.txt"
+  output_file="backup_metadata.json"
+
   # Backup information
   date_time=$(date +"%Y-%m-%d %H:%M:%S")
   user_info=$(id)
   backup_start_time=$(date +"%Y-%m-%d %H:%M:%S")
   backup_source="$TargetDir"
-  backup_destination="$TargetBackup"
+  backup_destination="$TargetBackup/${hash}_${unique_identifier}"
 
   # Backup
   # Replacing the spaces in the target directory with underscores first
@@ -89,28 +94,31 @@ yalla_backup() {
   find ${TargetDir} -name "* *" -type d | rename 's/ /_/g'
   find ${TargetDir} -name "* *" -type f | rename 's/ /_/g'
 
-  backup_command="rsync -av "$TargetDir" "$TargetBackup""
+    backup_command="rsync -av "$TargetDir" "$backup_destination""
 
   # Run the backup command
   $backup_command
 
-  # Backup end time *Backup information*
+  # Backup end time
   backup_end_time=$(date +"%Y-%m-%d %H:%M:%S")
 
-  # Save metadata to the output file
-  echo "Date and Time: $date_time" >"$output_file"
-  echo -e "\nUser Information:\n$user_info" >>"$output_file"
-  echo -e "\nBackup Start Time: $backup_start_time" >>"$output_file"
-  echo -e "Backup End Time: $backup_end_time" >>"$output_file"
-  echo -e "Backup Source: $backup_source" >>"$output_file"
-  echo -e "Backup Destination: $backup_destination" >>"$output_file"
-  echo -e "Backup Command: $backup_command" >>"$output_file"
-  # Done
+  # Save metadata to the output file in JSON format
+  echo "{" >>"$output_file"
+  echo '  "Date and Time": "'"$date_time"'",' >>"$output_file"
+  echo '  "SHA-1": "'"$hash"'",' >>"$output_file"
+  echo '  "User Information": "'"$user_info"'",' >>"$output_file"
+  echo '  "Backup Start Time": "'"$backup_start_time"'",' >>"$output_file"
+  echo '  "Backup End Time": "'"$backup_end_time"'",' >>"$output_file"
+  echo '  "Backup Source": "'"$backup_source"'",' >>"$output_file"
+  echo '  "Backup Destination": "'"$backup_destination"'",' >>"$output_file"
+  echo '  "Backup Command": "'"$backup_command"'"' >>"$output_file"
+  echo "}" >>"$output_file"
+
   echo "Backup Done :)"
 }
 
 backup() {
-  yalla_backup "$TargetBackup" "$TargetDir"
+  who_backup "$TargetBackup" "$TargetDir" # backup and metadata about this backup
 }
 
 <<validation
