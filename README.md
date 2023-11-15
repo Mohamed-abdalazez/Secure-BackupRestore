@@ -9,4 +9,4 @@
 ### Explanation
 - Phase one
   - Backup.
-  <img alt="Overview" src="Drafts/2_phase_1-1.png" />
+  <img alt="2_phase_1-1.png" src="Drafts/2_phase_1-1.png" />
