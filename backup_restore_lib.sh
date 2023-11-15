@@ -73,7 +73,7 @@ remote_server() {
 who_backup() {
   cd "$TargetBackup"
 
-  unique_identifier=$(date +"%Y%m%d%H%M%S")
+  unique_identifier=$(date +"%Y%m%d")
   hash=$(echo -n "$unique_identifier" | shasum | awk '{print $1}')
   hash=$(echo "$hash" | tr -d '[:space:]')
 
@@ -85,7 +85,7 @@ who_backup() {
   user_info=$(id)
   backup_start_time=$(date +"%Y-%m-%d %H:%M:%S")
   backup_source="$TargetDir"
-  backup_destination="$TargetBackup/${hash}_${unique_identifier}"
+  backup_destination="$TargetBackup${hash}"
 
   # Backup
   # Replacing the spaces in the target directory with underscores first
@@ -94,7 +94,7 @@ who_backup() {
   find ${TargetDir} -name "* *" -type d | rename 's/ /_/g'
   find ${TargetDir} -name "* *" -type f | rename 's/ /_/g'
 
-    backup_command="rsync -av "$TargetDir" "$backup_destination""
+  backup_command="rsync -av "$TargetDir" "$backup_destination""
 
   # Run the backup command
   $backup_command
