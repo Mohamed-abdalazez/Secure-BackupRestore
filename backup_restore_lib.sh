@@ -3,8 +3,7 @@
 <<validation
 1) Check whether the directory to be backed up exists or not, 
 as well as the directory where the backup should eventually be stored.
-2) Verifying that the number of parameters is 4
-3) Verifying that the number of days is an integer number and nothing else
+2) Verifying that the number of parameters is 2
 validation
 
 validate_backup_params() {
@@ -23,59 +22,21 @@ validate_backup_params() {
     exit 0
   fi
 
-  if [ $# -eq 4 ]; then
-    echo "ok 4 parameters!"
+  if [ $# -eq 2 ]; then
+    echo "ok 2 parameters!"
   else
     echo "To be able to use the script, you should do the following:"
     echo "1) directory to be backed up."
     echo "2) directory which should store eventually the backup."
-    echo "3) encryption key that you should use to encrypt your backup."
-    echo "4) number of days (n) that the script should use to backup only the changed files during the last n days."
     exit 0
   fi
-  re='^[0-9]+$'
-  if ! [[ $days =~ $re ]]; then
-    echo "${days}: not a number try again with a correct data!"
-    exit 0
-  fi
-}
-
-Encryption() {
-  tarFiles=$(ls ${data})
-  for i in ${tarFiles}; do
-    tar -cvzf - ${i} | gpg -c --batch --passphrase ${EncryptionKey} >${i}.gpg
-    mv ${i}.gpg ${TargetBackup}/$(basename $TargetDir)_${fullDate}
-  done
-}
-
-Decryption() {
-  cd ${name}
-  for i in ${files}; do
-    # echo hi += ${i}
-    gpg -d --batch --passphrase ${DecryptionKey} ${i} | tar -xvzf -
-    rm ${i}
-  done
-
-  files=$(ls)
-  for i in ${files}; do
-    tar -xf ${i}
-    rm ${i}
-  done
-}
-
-remote_server() {
-  backup=$(find ${target} -name "*.tar.gz" -maxdepth 1 -type f)
-  for i in ${backup}; do
-    scp -i naruto.pem ${i} ubuntu@ec2-54-209-139-74.compute-1.amazonaws.com:backups
-  done
 }
 
 who_backup() {
-  cd "$TargetBackup"
 
+  cd "$TargetBackup"
   unique_identifier=$(date +"%Y%m%d")
   hash=$(echo -n "$unique_identifier" | shasum | awk '{print $1}')
-  hash=$(echo "$hash" | tr -d '[:space:]')
 
   # Output file
   output_file="backup_metadata.json"
@@ -119,6 +80,44 @@ who_backup() {
 
 backup() {
   who_backup "$TargetBackup" "$TargetDir" # backup and metadata about this backup
+}
+
+validate_archive_params() {
+  echo ${TargetBackup}
+  if [[ -d ${TargetBackup} ]]; then
+    echo "Target Backup is correct!"
+  else
+    echo "${TargetBackup} is not valid please try again!"
+    exit 0
+  fi
+  if [ $# -eq 1 ]; then
+    echo "ok 1 parameters!"
+  else
+    echo "something worng try again!"
+  fi
+}
+
+archive() { # This function will be scheduled to be executed daily at 12:01 AM - ./archive.sh /path/to/target/directories
+
+  Target_directory="$TargetBackup"
+  # SHA-1 hash of the current date (YYYYMMDD)
+  unique_identifier=$(date +"%Y%m%d")
+  # echo "$unique_identifier"
+  get_directory=$(echo -n "$unique_identifier" | shasum | awk '{print $1}')
+  echo "$get_directory"
+
+  for dir in "$Target_directory"/*/; do
+    dir_name=$(basename "$dir")
+
+    if [ "$dir_name" != "$get_directory" ]; then
+      # Create a compressed tar archive for each directory, excluding JSON files
+      tar czf "$Target_directory/$dir_name.tar.gz" --exclude="*.json" -C "$Target_directory" "$dir_name"
+
+      # Remove the original directory
+      rm -r "$dir"
+    fi
+  done
+
 }
 
 <<validation
