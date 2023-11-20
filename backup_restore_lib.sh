@@ -1,10 +1,5 @@
 #!/bin/bash
 
-<<validation
-1) Check whether the directory to be backed up exists or not, 
-as well as the directory where the backup should eventually be stored.
-2) Verifying that the number of parameters is 2
-validation
 
 validate_backup_params() {
 
@@ -48,12 +43,6 @@ who_backup() {
   backup_source="$TargetDir"
   backup_destination="$TargetBackup${hash}"
 
-  # Backup
-  # Replacing the spaces in the target directory with underscores first
-  # but you have to install rename on your machine first
-  # sudo apt install rename
-  find ${TargetDir} -name "* *" -type d | rename 's/ /_/g'
-  find ${TargetDir} -name "* *" -type f | rename 's/ /_/g'
 
   backup_command="rsync -av "$TargetDir" "$backup_destination""
 
@@ -71,7 +60,7 @@ who_backup() {
   echo '  "Backup Start Time": "'"$backup_start_time"'",' >>"$output_file"
   echo '  "Backup End Time": "'"$backup_end_time"'",' >>"$output_file"
   echo '  "Backup Source": "'"$backup_source"'",' >>"$output_file"
-  echo '  "Backup Destination": "'"$backup_destination"'",' >>"$output_file"
+  echo '  "Backup Destination": "'"$backup_destination.tar.gz"'",' >>"$output_file"
   echo '  "Backup Command": "'"$backup_command"'"' >>"$output_file"
   echo "}" >>"$output_file"
 
@@ -112,7 +101,6 @@ archive() { # This function will be scheduled to be executed daily at 12:01 AM -
     if [ "$dir_name" != "$get_directory" ]; then
       # Create a compressed tar archive for each directory, excluding JSON files
       tar czf "$Target_directory/$dir_name.tar.gz" --exclude="*.json" -C "$Target_directory" "$dir_name"
-
       # Remove the original directory
       rm -r "$dir"
     fi
@@ -120,61 +108,50 @@ archive() { # This function will be scheduled to be executed daily at 12:01 AM -
 
 }
 
-<<validation
-1) Check whether the directory that contains the backup exists or not, 
-as well as the directory that the backup should be restored to.
-2) Verifying that the number of parameters is 3
-validation
-
 validate_restore_params() {
 
-  if [[ -d ${TargetDir} ]]; then
-    echo "done"
-  else
-    echo "$TargetDir is not valid please try again!"
-    exit 0
+  # Validate SHA-1 format
+  if [[ ! "$user_input_sha1" =~ ^[0-9a-fA-F]{40}$ ]]; then
+    echo "Invalid SHA-1 format:("
+    exit 1
   fi
 
-  if [[ -d ${TargetBackup} ]]; then
-    echo "done"
+  # Parse the JSON file and extract the Backup Destination based on the SHA-1 input
+  backup_destination=$(jq -r --arg sha1 "$user_input_sha1" '. | select(.["SHA-1"] == $sha1) | .["Backup Destination"]' "$json_file")
+
+  # Check if the backup_destination is not empty
+  if [ -z "$backup_destination" ]; then
+    echo "Backup not found for SHA-1: $user_input_sha1"
+    exit 1
+  fi
+
+  # Determine the type of archive 
+  if [[ "$backup_destination" =~ \.tar\.gz$ ]]; then
+    echo "Ok"
   else
-    echo "$TargetBackup is not valid please try again!"
-    exit 0
+  echo "$backup_destination"
+    echo "Unsupported archive format. Please adjust the extraction command."
+    exit 1
   fi
 
   if [ $# -eq 3 ]; then
-    echo "ok"
+    echo "OK"
   else
     echo "To be able to use the script, you should do the following:"
-    echo "1) the directory that contains the backup."
-    echo "2) the directory that the backup should be restored to."
-    echo "3) DecryptionKey key that you should use to Decrypt your data."
+    echo "1) /path/to/backup_metadata.json."
+    echo "2) user_input_sha1."
+    echo "3) /path/to/destination/to/restore/the/backup."
     exit 0
   fi
 }
 
 restore() {
 
-  # Extracting the backup file, which is <original directory name>_<date>.tar.gz
-
-  cd ${TargetBackup}
-  gpgFilesTar=$(find -maxdepth 1 -name '*.tar.gz')
-  echo ${gpgFilesTar}
-
-  for i in ${gpgFilesTar}; do
-    tar -xf ${i} -C ${TargetDir}
-  done
-
-  for i in ${gpgFilesTar}; do
-    name=${i}
-    name=$(echo ${name} | cut -c 3- | rev | cut -c8- | rev)
-    cd ..
-    cd $(basename ${TargetDir})
-
-    # Decryption, Files are Decrypted using the Decryption Key provided on the command line
-
-    files=$(ls ${name})
-    Decryption ${files}
-
-  done
+  json_file="$1"
+  user_input_sha1="$2"
+  restore_directory="$3"
+  # Parse the JSON file and extract the Backup Destination based on the SHA-1 input
+  backup_destination=$(jq -r --arg sha1 "$user_input_sha1" '. | select(.["SHA-1"] == $sha1) | .["Backup Destination"]' "$json_file")
+  echo "$backup_destination"
+  tar -xzvf "$backup_destination" -C "$restore_directory"
 }

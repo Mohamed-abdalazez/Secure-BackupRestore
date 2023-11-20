@@ -1,11 +1,12 @@
 #!/bin/bash
 
-TargetBackup=$1
-TargetDir=$2
-DecryptionKey=$3
+json_file="$1"
+user_input_sha1="$2"
+restore_directory="$3"
+
 
 source ../backup_restore_lib.sh
 
 validate_restore_params ${@}
 
-restore ${TargetBackup} ${TargetDir} ${DecryptionKey}
+restore ${json_file} ${user_input_sha1} ${restore_directory}
