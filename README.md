@@ -44,7 +44,7 @@
 - rsync (File synchronization tool):
 
     - Description: rsync is a fast and versatile file synchronization tool. It is used in the script for performing backups.
-    - Official Site: [rsync Official Site]([https://stedolan.github.io/jq/](https://rsync.samba.org/)
+    - Official Site: [rsync Official Site](https://rsync.samba.org/)
 
     - Installation:
 ```
