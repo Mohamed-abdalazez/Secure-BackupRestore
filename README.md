@@ -55,3 +55,4 @@
 ### Next Tasks  
 - More customization in the restore module.
 - Back up the JSON file containing the metadata of the backups to a remote server.
+- Encryption module.
